@@ -2,7 +2,7 @@
   "name": "game-server",
   "version": "1.0.0",
   "description": "Free online game server",
-  "main": "server.js",
+  "main": "index.js",
   "scripts": {
     "start": "node server.js"
   },
