@@ -13,7 +13,7 @@ app.use(helmet({ crossOriginResourcePolicy: false }));
 // ====== Config ======
 const MONGODB_URI =
   process.env.MONGODB_URI ||
-  "mongodb+srv://hhg827834:Un0YrC3Wsf4raCAX@cluster0.a6lwijj.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
+  "mongodb+srv://MyGameServer:fwu9A09aQU2VsPhD@cluster1.do09hor.mongodb.net/?retryWrites=true&w=majority&appName=Cluster1";
 
 // Owner مؤقت
 const OWNER_ID = process.env.OWNER_ID || "owner_temp";
