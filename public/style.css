@@ -1,0 +1,11 @@
+body { font-family: system-ui, Arial; background:#0f1221; color:#e9ecf1; margin:0; }
+.app { max-width: 720px; margin: 32px auto; padding: 24px; background:#171a2f; border-radius:16px; }
+h1 { margin-top: 0 }
+.panel { display:flex; gap:12px; align-items:center; margin-bottom:16px }
+.bet-box { background:#1f2342; padding:16px; border-radius:12px; margin:12px 0; display:flex; gap:12px; align-items:center; flex-wrap:wrap }
+.bet-box input, .bet-box select, button { padding:8px 10px; border-radius:8px; border:0 }
+button { background:#4e6af3; color:white; cursor:pointer }
+button:hover { filter:brightness(1.1) }
+.result { margin-top:16px; font-weight:bold }
+.log { margin-top:16px; opacity:.9 }
+.log p { margin:.3rem 0 }

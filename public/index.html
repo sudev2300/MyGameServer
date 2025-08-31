@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>لعبة الروليت والصاروخ</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #111; color: #fff; text-align: center; }
+    h1 { color: #0f0; }
+    .game { border: 2px solid #444; margin: 20px auto; padding: 15px; border-radius: 12px; width: 90%; max-width: 500px; background: #222; }
+    button { padding: 10px 20px; margin: 5px; border: none; border-radius: 8px; cursor: pointer; }
+    .roulette-wheel { margin: 20px auto; width: 200px; height: 200px; border-radius: 50%; border: 5px solid #fff; display: flex; align-items: center; justify-content: center; font-size: 24px; }
+    .rocket { font-size: 48px; margin: 20px; transition: transform 0.2s; }
+    #leaderboard { margin-top: 20px; text-align: left; max-width: 400px; margin-left: auto; margin-right: auto; }
+  </style>
+</head>
+<body>
+  <h1>🎡 لعبة الروليت 🚀 لعبة الصاروخ</h1>
+
+  <!-- لعبة الروليت -->
+  <div class="game">
+    <h2>🎡 الروليت</h2>
+    <div class="roulette-wheel" id="rouletteWheel">?</div>
+    <input type="number" id="rouletteBet" placeholder="الرهان" />
+    <button onclick="playRoulette()">إلعب</button>
+  </div>
+
+  <!-- لعبة الصاروخ -->
+  <div class="game">
+    <h2>🚀 الصاروخ</h2>
+    <div id="rocket" class="rocket">🚀</div>
+    <p>المضاعف الحالي: <span id="multiplier">x1.0</span></p>
+    <input type="number" id="rocketBet" placeholder="الرهان" />
+    <input type="number" id="cashoutTarget" placeholder="الهدف (مثال 20)" />
+    <button onclick="startRocket()">إطلاق 🚀</button>
+    <button onclick="manualCashout()">سحب الآن 💰</button>
+  </div>
+
+  <!-- قائمة الترتيب -->
+  <div class="game">
+    <h2>🏆 الترتيب اليومي</h2>
+    <div id="leaderboard">تحميل...</div>
+  </div>
+
+  <!-- أصوات -->
+  <audio id="launchSound" src="https://www.fesliyanstudios.com/play-mp3/387" preload="auto"></audio>
+  <audio id="explodeSound" src="https://www.fesliyanstudios.com/play-mp3/6674" preload="auto"></audio>
+  <audio id="winSound" src="https://www.fesliyanstudios.com/play-mp3/3872" preload="auto"></audio>
+
+  <script>
+    const serverUrl = "https://workspace.hhg827834.repl.co";
+
+    // 🎡 الروليت
+    async function playRoulette() {
+      const bet = parseInt(document.getElementById("rouletteBet").value);
+      if (!bet || bet <= 0) return alert("حط رهان!");
+      const res = await fetch(serverUrl + "/roulette", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ bet })
+      });
+      const data = await res.json();
+      document.getElementById("rouletteWheel").innerText = data.result;
+      updateLeaderboard();
+    }
+
+    // 🚀 الصاروخ
+    let rocketInterval;
+    let multiplier = 1.0;
+    let target = 0;
+    let betAmount = 0;
+    let active = false;
+
+    async function startRocket() {
+      if (active) return;
+      betAmount = parseInt(document.getElementById("rocketBet").value);
+      target = parseFloat(document.getElementById("cashoutTarget").value);
+      if (!betAmount || betAmount <= 0) return alert("ادخل رهان");
+      if (!target || target <= 1) return alert("ادخل هدف صحيح");
+
+      multiplier = 1.0;
+      document.getElementById("multiplier").innerText = "x" + multiplier.toFixed(1);
+      document.getElementById("rocket").style.transform = "translateY(0px)";
+      active = true;
+      document.getElementById("launchSound").play();
+
+      rocketInterval = setInterval(() => {
+        multiplier += 0.1;
+        document.getElementById("multiplier").innerText = "x" + multiplier.toFixed(1);
+        document.getElementById("rocket").style.transform = `translateY(-${multiplier*5}px)`;
+
+        if (multiplier >= target) {
+          cashout(true);
+        }
+
+        // احتمال عشوائي ينفجر
+        if (Math.random() < 0.01 * multiplier) {
+          explode();
+        }
+      }, 300);
+    }
+
+    function manualCashout() {
+      if (active) {
+        cashout(false);
+      }
+    }
+
+    async function cashout(auto) {
+      clearInterval(rocketInterval);
+      active = false;
+      document.getElementById("winSound").play();
+      const winAmount = Math.floor(betAmount * multiplier);
+      alert("ربحت: " + winAmount + " كوينز عند " + multiplier.toFixed(1));
+      await fetch(serverUrl + "/rocket", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ bet: betAmount, multiplier })
+      });
+      updateLeaderboard();
+    }
+
+    function explode() {
+      clearInterval(rocketInterval);
+      active = false;
+      document.getElementById("explodeSound").play();
+      alert("💥 الصاروخ انفجر عند x" + multiplier.toFixed(1));
+      updateLeaderboard();
+    }
+
+    // 🏆 الترتيب
+    async function updateLeaderboard() {
+      const res = await fetch(serverUrl + "/leaderboard");
+      const data = await res.json();
+      let html = "<ol>";
+      data.forEach(p => {
+        html += `<li>${p.name || "لاعب"} - ${p.score} كوينز</li>`;
+      });
+      html += "</ol>";
+      document.getElementById("leaderboard").innerHTML = html;
+    }
+
+    updateLeaderboard();
+    setInterval(updateLeaderboard, 10000);
+  </script>
+</body>
+</html>
